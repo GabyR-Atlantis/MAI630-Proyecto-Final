@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vehicle Monitor WebGPU</title>
+    <link rel="stylesheet" href="./app.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.webgpu.min.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Vehicle Monitor</h1>
+          <p>Browser model rewrite using ONNX Runtime Web with WebGPU-first execution.</p>
+        </div>
+        <div class="status-strip">
+          <span class="status-pill" id="runtimeStatus">Loading runtime...</span>
+          <span class="status-pill" id="sourceStatus">Idle</span>
+        </div>
+      </header>
+
+      <section class="controls-band">
+        <div class="control-group">
+          <label for="sourceMode">Source</label>
+          <select id="sourceMode">
+            <option value="file">Video file</option>
+            <option value="url">URL stream</option>
+            <option value="camera">Camera</option>
+          </select>
+        </div>
+
+        <div class="control-group" id="fileGroup">
+          <label for="videoFile">Video</label>
+          <input id="videoFile" type="file" accept="video/*" />
+        </div>
+
+        <div class="control-group hidden" id="urlGroup">
+          <label for="streamUrl">Stream URL</label>
+          <input id="streamUrl" type="url" placeholder="https://example.com/stream.mp4" />
+        </div>
+
+        <div class="control-group hidden" id="cameraGroup">
+          <label for="cameraSelect">Camera</label>
+          <div class="inline-row">
+            <select id="cameraSelect"></select>
+            <button id="refreshDevices" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="confidenceInput">Confidence</label>
+          <input id="confidenceInput" type="number" min="0.05" max="0.99" step="0.05" value="0.35" />
+        </div>
+
+        <div class="control-group">
+          <label for="vehicleClassesInput">Vehicle classes</label>
+          <input id="vehicleClassesInput" type="text" value="car,motorcycle,bus,truck" />
+        </div>
+
+        <div class="control-group">
+          <label for="countLineRatioInput">Count line ratio</label>
+          <input id="countLineRatioInput" type="number" min="0.05" max="0.95" step="0.05" value="0.5" />
+        </div>
+
+        <div class="control-group">
+          <label for="maxTrackDistanceInput">Max track distance</label>
+          <input id="maxTrackDistanceInput" type="number" min="10" max="500" step="5" value="90" />
+        </div>
+
+        <div class="control-group">
+          <label for="maxTrackMissingInput">Max missed frames</label>
+          <input id="maxTrackMissingInput" type="number" min="0" max="120" step="1" value="12" />
+        </div>
+
+        <div class="control-group actions">
+          <button id="startButton" type="button">Start</button>
+          <button id="stopButton" type="button" disabled>Stop</button>
+        </div>
+      </section>
+
+      <section class="stats-band">
+        <div>
+          <span class="stat-label">Frame</span>
+          <strong id="frameStat">0</strong>
+        </div>
+        <div>
+          <span class="stat-label">Live vehicles</span>
+          <strong id="liveStat">0</strong>
+        </div>
+        <div>
+          <span class="stat-label">Unique vehicles</span>
+          <strong id="uniqueStat">0</strong>
+        </div>
+        <div>
+          <span class="stat-label">Active tracks</span>
+          <strong id="trackStat">0</strong>
+        </div>
+      </section>
+
+      <section class="viewer-band">
+        <div class="viewer-panel">
+          <h2>Annotated stream</h2>
+          <canvas id="outputCanvas" width="960" height="540"></canvas>
+        </div>
+        <div class="viewer-panel">
+          <h2>Model preview</h2>
+          <canvas id="modelCanvas" width="640" height="640"></canvas>
+        </div>
+      </section>
+
+      <section class="summary-band">
+        <div class="summary-panel">
+          <h2>Counts by label</h2>
+          <div id="countsList" class="counts-list"></div>
+        </div>
+        <div class="summary-panel">
+          <h2>Status</h2>
+          <pre id="statusDetails">Waiting for runtime...</pre>
+        </div>
+      </section>
+    </main>
+
+    <video id="videoElement" class="hidden-video" playsinline muted></video>
+  </body>
+</html>
